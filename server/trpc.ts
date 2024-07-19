@@ -1,6 +1,6 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 
-import { getServerAuthSession } from "../api/auth/[...nextauth]/route";
+import { getServerAuthSession } from "../app/api/auth/[...nextauth]/route";
 import { ZodError } from "zod";
 import SuperJSON from "superjson";
 
@@ -26,8 +26,6 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
     };
   },
 });
-
-// const t = initTRPC.create();
 
 export const createTRPCRouter = t.router;
 

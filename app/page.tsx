@@ -1,37 +1,28 @@
-"use client";
+import { redirect } from "next/navigation";
+import { getServerAuthSession } from "./api/auth/[...nextauth]/route";
 
-import { GetPrivateTodos } from "./_components/GetPrivateTodos";
-import { GetTodos } from "./_components/GetTodos";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { Card } from "@/components/ui/card";
+import GoogleLoginButton from "@/components/app/auth/GoogleLoginButton";
 
-export default function Home() {
+export default async function Home() {
 
-  const session = useSession();
+  const session = await getServerAuthSession();
+
+  if (session && session.user) {
+    redirect("/dashboard");
+  }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        {
-          session.status === "authenticated"
-            ? (
-              <button onClick={() => {
-                signOut()
-              }}>logout</button>
-            ) : (
-              <button onClick={() => {
-                signIn("cognito")
-              }}>Signin with google</button>
-            )
-        }
-        {
-          session.status === "authenticated"
-            ? (
-              <GetPrivateTodos />
-            ) : (
-              <GetTodos />
-            )
-        }
-      </div>
+    <main style={{
+      height: "calc(100vh - 16rem)"
+    }} className="flex justify-center items-center">
+      <Card className="w-full max-w-md p-6 space-y-4 border-slate-300">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold mb-2">Welcome to PodFlix App</h1>
+          <p className="text-muted-foreground">Sign in to create videos out of your podcast episodes.</p>
+        </div>
+        <GoogleLoginButton />
+      </Card>
     </main>
   );
 }

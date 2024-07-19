@@ -1,13 +1,5 @@
 import NextAuth, { getServerSession, NextAuthOptions } from "next-auth";
 import CognitoProvider from "next-auth/providers/cognito";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { CognitoUser, CognitoUserPool, CognitoUserSession, AuthenticationDetails } from 'amazon-cognito-identity-js'
-import { signIn } from "next-auth/react";
-
-const UserPool = new CognitoUserPool({
-  UserPoolId: process.env.COGNITO_USER_POOL_ID ?? "",
-  ClientId: process.env.COGNITO_CLIENT_ID ?? ""
-});
 
 export const authOptions: NextAuthOptions = {
   pages: {

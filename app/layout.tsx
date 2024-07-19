@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Provider from "./_trpc/Provider";
-import SessionProvider from "@/app/_components/SessionProvider";
+import Provider from "../trpc/Provider";
 import { getServerSession } from "next-auth";
+import SessionProvider from "@/auth/SessionProvider";
+import Link from "next/link";
+import AuthDropdown from "@/components/app/auth/AuthDropdown";
+import Image from "next/image";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,6 +28,14 @@ export default async function RootLayout({
       <body className={inter.className}>
         <SessionProvider session={session}>
           <Provider>
+            <nav className=" sticky top-0 left-0 w-full flex justify-between items-center border-b border-slate-200 shadow-md p-4">
+              <div>
+                <Link href="/">
+                  <Image width={120} height={32} src={"/logo-2.png"} alt="PodFlix" />
+                </Link>
+              </div>
+              <AuthDropdown />
+            </nav>
             {children}
           </Provider>
         </SessionProvider>
