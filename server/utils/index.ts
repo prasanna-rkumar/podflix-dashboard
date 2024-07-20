@@ -41,14 +41,25 @@ export const getPodcastEpisodes = async (podcastUrl: string, pageNumber: number)
           const description = descriptionDom.window.document.body.textContent;
           const episodeArt = item["itunes:image"] ? item["itunes:image"][0].$.href : showArt;
 
-          const guid = item.guid ? item.guid[0] : '';
+          const durationString = item["itunes:duration"] ? item["itunes:duration"][0] : '';
+          const durationParts = durationString.split(':').map(Number);
+
+          let totalSeconds = 0;
+
+          if (durationParts.length === 3) {
+            totalSeconds = durationParts[0] * 3600 + durationParts[1] * 60 + durationParts[2];
+          } else if (durationParts.length === 2) {
+            totalSeconds = durationParts[0] * 60 + durationParts[1]; // For "MM:SS" format
+          } else if (durationParts.length === 1) {
+            totalSeconds = durationParts[0]; // For "SS" format
+          }
 
           return {
             title: item.title ? item.title[0] : '',
             description: description?.substring(0, 256),
-            audioUrl: item.enclosure && item.enclosure[0] && item.enclosure[0].$ ? item.enclosure[0].$.url : '',
+            rss_audio_url: item.enclosure && item.enclosure[0] && item.enclosure[0].$ ? item.enclosure[0].$.url : '',
             publishedAt: item.pubDate ? item.pubDate[0] : '',
-            duration: item["itunes:duration"] ? item["itunes:duration"][0] : '',
+            duration: totalSeconds,
             episodeArt
           }
         })

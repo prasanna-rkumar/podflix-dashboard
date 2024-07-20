@@ -1,6 +1,7 @@
 import { Table } from 'dynamodb-toolbox';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb'
+import { reverse } from 'node:dns';
 
 const region = "us-east-1";
 const endpoint = "https://dynamodb.us-east-1.amazonaws.com";
@@ -27,5 +28,6 @@ export const CoreTable = new Table({
   sortKey: "SK",
   indexes: {
     GSI1: { partitionKey: "GSI1PK", sortKey: "GSI1SK" },
+    reverseIndex: { partitionKey: "SK", sortKey: "PK" },
   },
 });
