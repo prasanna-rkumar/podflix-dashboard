@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { cn, secondsToHHMMSS, wait } from "@/lib/utils";
 import { Episode } from "@/server";
 import { trpc } from "@/trpc/client";
-import { ArrowBigLeft, ArrowBigRight, LoaderCircle } from "lucide-react";
+import { ArrowBigLeft, ArrowBigRight, LoaderCircle, PauseIcon, PlayIcon } from "lucide-react";
 import Image from "next/image";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 const STEPS = [
@@ -24,7 +25,7 @@ export default function DashboardPage() {
   const [choosenEpisode, setChoosenEpisode] = useState<z.infer<typeof Episode> | null>(null);
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-12 px-4 md:px-6">
+    <div className="w-full max-w-7xl mx-auto py-12 px-4 md:px-6">
       <div className="flex justify-between items-center w-full max-w-2xl mx-auto gap-4 mb-8">
         {
           STEPS.map((step, index) => {
@@ -228,8 +229,17 @@ type SelectAudioClipProps = {
 }
 const SelectAudioClip = ({ episode: initEpisode }: SelectAudioClipProps) => {
 
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [selectionRange, setSelectionRange] = useState<[number, number]>([0, 60]);
+  const [seek, setSeek] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { client } = trpc.useUtils();
   const [episode, setEpisode] = useState<z.infer<typeof Episode> | null>(initEpisode);
+
+  const onAudioLoaded = () => {
+    if (!audioRef.current) return;
+    console.log({ duration: audioRef.current.duration });
+  }
 
   useEffect(() => {
     if (!episode) return;
@@ -273,21 +283,64 @@ const SelectAudioClip = ({ episode: initEpisode }: SelectAudioClipProps) => {
     }
   }, [client.getEpisodeStatus, episode])
 
-  if (!episode) {
+  useEffect(() => {
+    if (!audioRef.current) return;
+    const seekerInterval = setInterval(() => {
+      if (audioRef.current?.paused) return;
+      setSeek(audioRef.current?.currentTime ?? 0);
+    }, 250);
+    return () => {
+      clearInterval(seekerInterval);
+    }
+  }, [isPlaying])
+
+  if (!episode || !episode.s3_audio_key) {
     return null;
   }
 
-  if (episode.s3_audio_key) {
-    return (
-      <div>
-        <audio src={episode.s3_audio_key} controls />
-      </div>
-    )
-  }
-
   return (
-    <div>
-      waveform
+    <div className=" w-full">
+      <div className=" mt-4">
+        <Button onClick={() => {
+          setIsPlaying((prev) => !prev);
+          if (!audioRef.current) return;
+          if (audioRef.current.paused) {
+            audioRef.current.play();
+          } else {
+            audioRef.current.pause();
+          }
+        }}>
+          {
+            isPlaying
+              ? <PauseIcon size={20} />
+              : <PlayIcon size={20} />
+          }
+        </Button>
+      </div>
+      <div className=" w-full h-24 relative overflow-x-auto p-2">
+        <div style={{
+          width: 1000
+        }} className="absolute h-16">
+          <div style={{ width: episode.duration }} className="flex justify-between items-center h-10">
+            <Slider
+              onValueChange={(value) => {
+                setSelectionRange((prev) => {
+                  if (value[1] - value[0] < 60) return prev;
+                  return [value[0], value[1]];
+                })
+              }}
+              value={selectionRange}
+              min={0}
+              max={episode.duration}
+              step={1}
+              className="w-full"
+            />
+
+          </div>
+          {/* <canvas className="w-full h-full" ref={canvasRef}></canvas> */}
+        </div>
+      </div>
+      <audio className="hidden" ref={audioRef} onLoadedData={onAudioLoaded} src={episode.s3_audio_key} controls />
     </div>
   )
 }
