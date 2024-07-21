@@ -25,10 +25,10 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className="relative">
         <SessionProvider session={session}>
           <Provider>
-            <nav className=" sticky top-0 left-0 w-full flex justify-between items-center border-b border-slate-200 shadow-md p-4">
+            <nav className=" absolute bg-white top-0 left-0 w-full flex justify-between items-center border-b border-slate-200 shadow-md p-4">
               <div>
                 <Link href="/">
                   <Image width={120} height={32} src={"/logo-2.png"} alt="PodFlix" />
@@ -36,7 +36,9 @@ export default async function RootLayout({
               </div>
               <AuthDropdown />
             </nav>
-            {children}
+            <div style={{ height: 'calc(100vh - 69px)' }} className="flex flex-col justify-start items-start pt-[69px]">
+              {children}
+            </div>
           </Provider>
         </SessionProvider>
       </body>

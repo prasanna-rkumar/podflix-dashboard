@@ -11,6 +11,6 @@ export default async function DashboardLayput({
     redirect("/");
   }
   return (
-    <div>{children}</div>
+    children
   );
 }

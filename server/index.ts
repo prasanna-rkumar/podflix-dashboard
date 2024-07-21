@@ -3,6 +3,7 @@ import { z } from "zod";
 import { LambdaClient, InvokeCommand, InvocationType } from "@aws-sdk/client-lambda"; // ES Modules import
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { createClient } from "@deepgram/sdk";
 
 import { protectedProcedure, createTRPCRouter } from "./trpc";
 import { getPodcastEpisodes } from "./utils";
@@ -10,6 +11,7 @@ import { EpisodeEntity } from "@/db/entities/EpisodeEntity";
 
 const s3Client = new S3Client();
 const lambdaClient = new LambdaClient();
+const deepgram = createClient(process.env.DEEPGRAM_API_KEY);
 
 interface User {
   id: string;
@@ -143,6 +145,31 @@ export const appRouter = createTRPCRouter({
     }
 
     return episode;
+  }),
+  generateCaptions: protectedProcedure.input(z.object({
+    // episode: Episode,
+    s3_audio_url: z.string().url(),
+  })).mutation(async (opts) => {
+    const { input: { s3_audio_url } } = opts;
+
+    const { result, error } = await deepgram.listen.prerecorded.transcribeUrl(
+      {
+        url: s3_audio_url,
+      },
+      // STEP 3: Configure Deepgram options for audio analysis
+      {
+        model: "nova-2",
+        smart_format: true,
+        diarize: true,
+        punctuate: true,
+      }
+    );
+
+    if (error) throw error;
+
+    const wordLevelCaptions = result.results.channels[0].alternatives[0].words;
+
+    return wordLevelCaptions;
   })
 });
 

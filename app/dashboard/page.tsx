@@ -1,13 +1,16 @@
 "use client";
 
+import VideoEditor from "@/components/app/video/VideoEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MultiRangeSlider } from "@/components/ui/MultiRangeSlider";
 import { Slider } from "@/components/ui/slider";
-import { cn, secondsToHHMMSS, wait } from "@/lib/utils";
+import { cn, secondsToHHMMSS, secondsToHHMMSSWithoutZeroPadding, wait } from "@/lib/utils";
 import { Episode } from "@/server";
 import { trpc } from "@/trpc/client";
+import { CaretDownIcon } from "@radix-ui/react-icons";
 import { ArrowBigLeft, ArrowBigRight, LoaderCircle, PauseIcon, PlayIcon } from "lucide-react";
 import Image from "next/image";
 import { Fragment, useEffect, useRef, useState } from "react";
@@ -21,7 +24,7 @@ const STEPS = [
 
 export default function DashboardPage() {
 
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(2);
   const [choosenEpisode, setChoosenEpisode] = useState<z.infer<typeof Episode> | null>(null);
 
   return (
@@ -60,8 +63,10 @@ export default function DashboardPage() {
               setCurrentStep(1)
             }} />
           )
-          : (
+          : currentStep === 1 ? (
             <SelectAudioClip episode={choosenEpisode} />
+          ) : (
+            <VideoEditor />
           )
       }
     </div>
@@ -105,7 +110,6 @@ function SelectEpisode({ onSelectEpisode }: SelectEpisodeProps) {
     setFetchTrigger(true); // Trigger fetch on page change
   };
 
-  console.log({ isFetching, isLoading, isPreviousData })
 
   return (
     <div className="space-y-4 flex flex-col items-center">
@@ -152,7 +156,6 @@ function SelectEpisode({ onSelectEpisode }: SelectEpisodeProps) {
                           return (
                             (
                               <Card onClick={async () => {
-                                console.log(episode)
                                 const resp = await addEpisodeToAccount(episode);
                                 onSelectEpisode(resp.episode);
                               }} key={index} className="cursor-pointer hover:shadow-md border hover:border-blue-300 transition-all">
@@ -230,6 +233,7 @@ type SelectAudioClipProps = {
 const SelectAudioClip = ({ episode: initEpisode }: SelectAudioClipProps) => {
 
   const [isPlaying, setIsPlaying] = useState(false);
+  const [zoom, setZoom] = useState(2.5);
   const [selectionRange, setSelectionRange] = useState<[number, number]>([0, 60]);
   const [seek, setSeek] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -238,7 +242,6 @@ const SelectAudioClip = ({ episode: initEpisode }: SelectAudioClipProps) => {
 
   const onAudioLoaded = () => {
     if (!audioRef.current) return;
-    console.log({ duration: audioRef.current.duration });
   }
 
   useEffect(() => {
@@ -252,7 +255,6 @@ const SelectAudioClip = ({ episode: initEpisode }: SelectAudioClipProps) => {
         if (!resp) return;
         switch (resp.audio_status) {
           case "READY": {
-            console.log("Audio Ready!!", resp);
             setEpisode((prevEpisode) => {
               if (!prevEpisode) return null;
               return {
@@ -283,29 +285,19 @@ const SelectAudioClip = ({ episode: initEpisode }: SelectAudioClipProps) => {
     }
   }, [client.getEpisodeStatus, episode])
 
-  useEffect(() => {
-    if (!audioRef.current) return;
-    const seekerInterval = setInterval(() => {
-      if (audioRef.current?.paused) return;
-      setSeek(audioRef.current?.currentTime ?? 0);
-    }, 250);
-    return () => {
-      clearInterval(seekerInterval);
-    }
-  }, [isPlaying])
-
   if (!episode || !episode.s3_audio_key) {
     return null;
   }
 
   return (
     <div className=" w-full">
-      <div className=" mt-4">
+      <div className=" mt-4 flex justify-start items-center gap-4">
         <Button onClick={() => {
           setIsPlaying((prev) => !prev);
           if (!audioRef.current) return;
           if (audioRef.current.paused) {
             audioRef.current.play();
+            audioRef.current.currentTime = selectionRange[0];
           } else {
             audioRef.current.pause();
           }
@@ -316,31 +308,86 @@ const SelectAudioClip = ({ episode: initEpisode }: SelectAudioClipProps) => {
               : <PlayIcon size={20} />
           }
         </Button>
+        <Slider
+          className="max-w-32"
+          value={[zoom]}
+          onValueChange={(value) => {
+            setZoom(value[0]);
+          }}
+          min={2.5}
+          max={10}
+          step={0.1}
+        />
       </div>
-      <div className=" w-full h-24 relative overflow-x-auto p-2">
-        <div style={{
-          width: 1000
-        }} className="absolute h-16">
-          <div style={{ width: episode.duration }} className="flex justify-between items-center h-10">
-            <Slider
-              onValueChange={(value) => {
-                setSelectionRange((prev) => {
-                  if (value[1] - value[0] < 60) return prev;
-                  return [value[0], value[1]];
-                })
-              }}
-              value={selectionRange}
-              min={0}
-              max={episode.duration}
-              step={1}
-              className="w-full"
-            />
-
+      <div className=" w-full h-28 relative overflow-x-auto p-2">
+        <div style={{ width: episode.duration * zoom }} className="relative flex flex-col gap-2 h-12">
+          <div className="absolute top-0 z-10" style={{ left: seek * zoom }}>
+            <div className="w-[1px] h-10 bg-black">
+            </div>
+            <CaretDownIcon className="w-6 h-6 absolute -left-3 -top-4 text-black" />
           </div>
-          {/* <canvas className="w-full h-full" ref={canvasRef}></canvas> */}
+
+          <MultiRangeSlider
+            onValueChange={(value) => {
+              setSelectionRange((prev) => {
+                if (prev[0] === value[0] && prev[1] !== value[1] && value[1] - value[0] > 60) {
+                  value[0] = value[1] - 60
+                }
+                if (prev[1] === value[1] && prev[0] !== value[0] && value[1] - value[0] > 60) {
+                  value[1] = value[0] + 60
+                }
+
+                // to reset the audio to the new starting time
+                if (prev[0] !== value[0]) {
+                  if (audioRef.current) {
+                    audioRef.current.currentTime = value[0];
+                  }
+                }
+                return [value[0], value[1]];
+              })
+            }}
+            minStepsBetweenThumbs={10}
+            value={selectionRange}
+            min={0}
+            max={episode.duration}
+            step={1}
+            className="w-full"
+          />
+          <div className="relative grow shrink-0 w-full h-4 bg-slate-100">
+            {
+              Array.from({ length: Math.ceil(episode.duration / 30) }).map((_, index) => {
+                const time = index * 30;
+                return (
+                  <Fragment key={index}>
+                    <div style={{ left: `${time * 100 / episode.duration}%` }} className="absolute h-6 bottom-0 w-[1px] bg-gray-400 z-10 text-[10px]">
+                      <span className="absolute top-full left-1/2 -translate-x-1/2">
+                        {secondsToHHMMSSWithoutZeroPadding(time)}
+                      </span>
+                    </div>
+                    <div style={{ left: `${(time + 15) * 100 / episode.duration}%` }} className="absolute bottom-2 h-4 w-[1px] bg-gray-300 z-10 text-gray-500 text-[10px]">
+                      <span className="absolute top-full left-1/2 -translate-x-1/2 pt-[1px]">
+                        {secondsToHHMMSSWithoutZeroPadding(time + 15).split(":").pop()}
+                      </span>
+                    </div>
+                  </Fragment>
+                )
+              })
+            }
+          </div>
         </div>
       </div>
-      <audio className="hidden" ref={audioRef} onLoadedData={onAudioLoaded} src={episode.s3_audio_key} controls />
+      <audio onLoadStart={() => {
+        console.log("loading")
+      }} onWaiting={() => {
+        console.log("waiting")
+      }} className="hidden" ref={audioRef} onLoadedData={onAudioLoaded} src={episode.s3_audio_key} onTimeUpdate={() => {
+        if (!audioRef.current) return;
+        setSeek(audioRef.current.currentTime);
+        if (audioRef.current.currentTime >= selectionRange[1]) {
+          audioRef.current.currentTime = selectionRange[0];
+          // setIsPlaying(false);
+        }
+      }} controls />
     </div>
   )
 }
