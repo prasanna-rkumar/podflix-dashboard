@@ -160,7 +160,7 @@ export default function VideoEditor({ video: initVideo }: { video: z.infer<typeo
                 video.descriptions && video.descriptions.length > 0 && (
                   <div className="descriptions mb-4">
                     <div className=" flex justify-between">
-                      <h2 className="text-slate-900 font-medium text-lg mt-4 mb-2">Description</h2>
+                      <h2 className="text-slate-900 font-medium text-lg mt-4 mb-2">Caption</h2>
                       <div className=" flex gap-2 items-center justify-end">
                         {
                           video.descriptions?.map((description, index) => (

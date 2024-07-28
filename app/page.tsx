@@ -23,7 +23,9 @@ export default async function Home() {
         <h4 className="max-w-[600px] text-slate-600 md:text-xl">AI-powered tool to generate stunning audiograms for your podcast episodes, perfect for sharing on social media</h4>
         <GoogleLoginButton />
       </div>
-      <div className=" rounded-md"></div>
+      <div className=" p-16">
+        <video className="rounded-lg shadow-lg border-2 border-slate-300" src="/sample.mp4" loop muted controls autoPlay />
+      </div>
     </div>
   );
 }
