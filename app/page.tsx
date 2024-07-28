@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getServerAuthSession } from "./api/auth/[...nextauth]/route";
+import { getServerAuthSession } from "../auth/auth";
 
 import { Card } from "@/components/ui/card";
 import GoogleLoginButton from "@/components/app/auth/GoogleLoginButton";

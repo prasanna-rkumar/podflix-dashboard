@@ -1,6 +1,6 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 
-import { getServerAuthSession } from "../app/api/auth/[...nextauth]/route";
+import { getServerAuthSession } from "../auth/auth";
 import { ZodError } from "zod";
 import SuperJSON from "superjson";
 
