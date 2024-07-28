@@ -137,11 +137,15 @@ export default function VideoEditor({ video: initVideo }: { video: z.infer<typeo
                 style={{ height: "calc(100vh * 2 / 3)" }}
               >
                 <Player
-                  className="w-full h-full bg-slate-100"
+                  className="bg-slate-100"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                  }}
+                  compositionHeight={1080}
+                  compositionWidth={1080}
                   controls
                   component={PodFlixVideo}
-                  compositionWidth={1080}
-                  compositionHeight={1080}
                   durationInFrames={24 * 60}
                   fps={24}
                   inputProps={{

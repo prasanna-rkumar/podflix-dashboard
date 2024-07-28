@@ -35,7 +35,7 @@ export const Word: React.FC<{
         color: transcriptionColor,
         fontSize: 36,
         marginRight: 16,
-        fontWeight: 500
+        fontWeight: 400
       }}
     >
       {item.word}

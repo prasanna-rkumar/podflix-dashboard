@@ -1,9 +1,15 @@
 import { Fragment } from "react";
-import { AbsoluteFill, Audio, Img, Sequence, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Audio, Img, Sequence, useVideoConfig } from "remotion";
+import * as Roboto from "@remotion/google-fonts/Roboto";
 import { z } from "zod";
 import { SubtitleWordType } from "../types";
 import { AudioViz } from "./AudioViz";
 import { Word } from "./Word";
+
+const { fontFamily } = Roboto.loadFont("normal", {
+  weights: ["400", "500", "900"],
+  subsets: ["latin", "latin-ext"],
+});
 
 export default function PodFlixVideo({ captions, audio_url, episode_art, episode_title }: {
   captions: { start: number, end: number, words: z.infer<typeof SubtitleWordType>[] }[],
@@ -24,7 +30,8 @@ export default function PodFlixVideo({ captions, audio_url, episode_art, episode
           alignItems: "center",
           fontSize: 24,
           backgroundColor: "white",
-          gap: 12
+          gap: 12,
+          fontFamily,
         }}
       >
         <Img
