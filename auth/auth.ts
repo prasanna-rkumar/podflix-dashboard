@@ -22,7 +22,7 @@ export const authOptions: NextAuthOptions = {
           client_id: process.env.COGNITO_CLIENT_ID,
           identity_provider: 'Google',
           scope: "openid profile email",
-          redirect_uri: "http://localhost:3000/api/auth/callback/cognito",
+          redirect_uri: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback/cognito`,
         },
       },
       profile(profile, tokens) {
