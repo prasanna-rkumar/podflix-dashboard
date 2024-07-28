@@ -42,7 +42,7 @@ const MultiRangeSlider = React.forwardRef<
       </SliderPrimitive.Thumb>
 
       <SliderPrimitive.Thumb className="group relative -left-[5px] rounded-r-md block h-10 w-1 bg-slate-700 shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:pointer-events-none disabled:opacity-50 dark:border-slate-800 dark:border-slate-50/50 dark:bg-slate-950 dark:focus-visible:ring-slate-300">
-        <span className="invisible group-active:visible">{props.value ? secondsToHHMMSS(props.value[1]) : ""}</span>
+        <span className="invisible group-active:visible absolute -top-4 left-1/2 -translate-x-1/2">{props.value ? secondsToHHMMSS(props.value[1]) : ""}</span>
       </SliderPrimitive.Thumb>
 
     </SliderPrimitive.Root>

@@ -6,9 +6,14 @@ import { signIn } from "next-auth/react";
 
 export default function GoogleLoginButton() {
   return (
-    <Button onClick={() => {
-      signIn("cognito")
-    }} variant={"outline"} size={"lg"} className="w-full flex items-center justify-center gap-6">
+    <Button
+      onClick={() => {
+        signIn("cognito")
+      }}
+      variant={"outline"}
+      size={"lg"}
+      className="w-full max-w-64 flex items-center justify-center gap-6"
+    >
       <GoogleIcon />
       Sign in with Google
     </Button>

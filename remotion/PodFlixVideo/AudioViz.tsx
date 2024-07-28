@@ -1,4 +1,4 @@
-import { useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
 import { useAudioData, visualizeAudio } from '@remotion/media-utils';
 
 export const AudioViz: React.FC<{
@@ -45,20 +45,28 @@ export const AudioViz: React.FC<{
       : frequencyDataSubset;
 
     return (
-      <div style={{ display: "flex", flexDirection: "row", height: 48, width: 48 * 4, justifyContent: "center", alignItems: "center", gap: 12, marginTop: 48 }}>
-        {frequenciesToDisplay.map((v, i) => {
-          return (
-            <div
-              key={i}
-              className="bar"
-              style={{
-                minWidth: '1px',
-                backgroundColor: waveColor,
-                height: `${500 * Math.sqrt(v)}%`,
-              }}
-            />
-          );
-        })}
-      </div>
+      <AbsoluteFill
+        style={{
+          top: 10,
+          justifyContent: "start",
+          alignItems: "center",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "row", height: 48, width: 48 * 4, justifyContent: "center", alignItems: "center", gap: 12, marginTop: 48 }}>
+          {frequenciesToDisplay.map((v, i) => {
+            return (
+              <div
+                key={i}
+                className="bar"
+                style={{
+                  minWidth: '2px',
+                  backgroundColor: waveColor,
+                  height: `${750 * Math.sqrt(v)}%`,
+                }}
+              />
+            );
+          })}
+        </div>
+      </AbsoluteFill>
     );
   };

@@ -36,9 +36,11 @@ export default async function RootLayout({
               </div>
               <AuthDropdown />
             </nav>
-            <div style={{ height: 'calc(100vh - 69px)' }} className="flex flex-col justify-start items-start pt-[69px]">
+            <main
+              className="flex h-screen flex-col justify-start items-start pt-20"
+            >
               {children}
-            </div>
+            </main>
           </Provider>
         </SessionProvider>
       </body>

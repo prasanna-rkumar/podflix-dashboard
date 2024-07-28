@@ -5,14 +5,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const secondsToHHMMSS = (secs: number) => {
+export const secondsToHHMMSS = (secs: number, skipHour = true) => {
   const hours = Math.floor(secs / 3600) % 24
   const minutes = Math.floor(secs / 60) % 60
   const seconds = secs % 60
 
   return [hours, minutes, seconds]
-    .map((v) => (v < 10 ? "0" + v : v))
-    .filter((v, i) => v !== "00" || i > 0)
+    .map((v, i) => {
+      if (i === 2) {
+        v = Math.floor(v)
+      }
+      return (v < 10 ? "0" + v : v)
+    })
+    .filter((v, i) => skipHour ? (v !== "00" || i > 0) : true)
     .join(":")
 }
 
