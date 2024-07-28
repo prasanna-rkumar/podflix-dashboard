@@ -24,13 +24,6 @@ export default async function Home() {
         <GoogleLoginButton />
       </div>
       <div className=" rounded-md"></div>
-      {/* <Card className="w-full max-w-md p-6 space-y-4 border-slate-300">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold mb-2">Welcome to PodFlix App</h1>
-          <p className="text-muted-foreground">Sign in to create videos out of your podcast episodes.</p>
-        </div>
-        
-      </Card> */}
     </div>
   );
 }
